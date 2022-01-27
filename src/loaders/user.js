@@ -1,4 +1,4 @@
-export const batchUsers = async (keys, models) => {
+ const batchUsers = async (keys, models) => {
   const users = await models.User.find({
     _id: {
       $in: keys,
@@ -7,3 +7,7 @@ export const batchUsers = async (keys, models) => {
 
   return keys.map((key) => users.find((user) => user.id == key));
 };
+
+module.exports = {
+  batchUsers
+}

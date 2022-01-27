@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require("mongoose");
 
 const userSpendingSchema = new mongoose.Schema(
   {
@@ -33,4 +33,4 @@ const userSpendingSchema = new mongoose.Schema(
 
 const UserSpending = mongoose.model('UserSpending', userSpendingSchema);
 
-export default UserSpending;
+module.exports = { UserSpending };

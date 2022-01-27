@@ -1,11 +1,7 @@
-import { combineResolvers } from "graphql-resolvers";
-import { isAuthenticated } from "./authorization";
-import moment from "moment";
-import _ from "lodash";
-
-// const fromCursorHash = (string) =>
-//   Buffer.from(string, "base64").toString("ascii");
-// const toCursorHash = (string) => Buffer.from(string).toString("base64");
+const { combineResolvers } = require("graphql-resolvers");
+const { isAuthenticated } = require("./authorization");
+const _ = require("lodash");
+const moment = require("moment");
 
 const timeIso = (x) => moment(x, "DD/MM/YYYY").toISOString();
 const timeUtc = (x) => moment(x, "DD/MM/YYYY").utc();
@@ -15,14 +11,16 @@ const SPENDING_MESSAGES = {
   NO_INFO: "NO_INFO",
   INVALID_DATE: "INVALID_DATE",
 };
-const { DUPLICATED_DATE, NO_INFO, INVALID_DATE } = SPENDING_MESSAGES;
+const { DUPLICATED_DATE,
+  // NO_INFO, INVALID_DATE
+} = SPENDING_MESSAGES;
 
-const INVALID_DATE_FORMAT = {
-  isSuccess: false,
-  message: INVALID_DATE,
-};
+// const INVALID_DATE_FORMAT = {
+//   isSuccess: false,
+//   message: INVALID_DATE,
+// };
 
-export default {
+module.exports = {
   Query: {
     dailyInfo: async (parent, { date }, { models, me }) => {
       const data = await models.UserSpending.findOne({
@@ -69,34 +67,34 @@ export default {
       isAuthenticated,
       async (parent, { input }, { models, me }) => {
         const { date } = input;
-        const data = await models.UserSpending.findOne({
-          date,
-          user: me.id,
-        });
-
-        if (data) {
-          return {
-            isSuccess: false,
-            message: DUPLICATED_DATE,
-          };
-        }
-        input.user = me.id;
-
-        try {
-          await models.UserSpending.create({
-            ...input,
-            iso: timeIso(date),
-            utc: timeUtc(date),
+          const data = await models.UserSpending.findOne({
+            date,
+            user: me.id,
           });
-          return {
-            isSuccess: true,
-          };
-        } catch (error) {
-          return {
-            isSuccess: false,
-            message: error,
-          };
-        }
+  
+          if (data) {
+            return {
+              isSuccess: false,
+              message: DUPLICATED_DATE,
+            };
+          }
+          input.user = me.id;
+  
+          try {
+            await models.UserSpending.create({
+              ...input,
+              iso: timeIso(date),
+              utc: timeUtc(date),
+            });
+            return {
+              isSuccess: true,
+            };
+          } catch (error) {
+            return {
+              isSuccess: false,
+              message: error,
+            };
+          }
       }
     ),
 

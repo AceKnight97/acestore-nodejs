@@ -1,12 +1,11 @@
-import jwt from "jsonwebtoken";
-import { combineResolvers } from "graphql-resolvers";
-import { AuthenticationError, UserInputError } from "apollo-server";
-import moment from "moment";
-import generator from "generate-password";
+const { combineResolvers } = require("graphql-resolvers");
+const { AuthenticationError, UserInputError } = require("apollo-server");
+const jwt = require("jsonwebtoken");
+const _ = require("lodash");
+const moment = require("moment");
+const Email = require("../helper");
+const { isAdmin, isAuthenticated } = require("./authorization");
 
-import { isAdmin, isAuthenticated } from "./authorization";
-import Email from "../utils/email";
-import _ from "lodash";
 
 const createToken = async (user, secret, expiresIn) => {
   const { id, email, username, role } = user;
@@ -38,7 +37,7 @@ const getLogInfo = async (models, id) => {
   };
 };
 
-export default {
+module.exports = {
   Query: {
     users: async (parent, args, { models }) => {
       const users = await models.User.find();
@@ -103,11 +102,14 @@ export default {
         }
         throw new AuthenticationError("Invalid password.");
       }
+      const { firstDate, totalIncome, totalSpending, moneyLeft } =
+        await getLogInfo(models, user.id);
+      _.assign(user, { firstDate, totalIncome, totalSpending, moneyLeft });
 
       return {
         token: createToken(user, secret, "1h"),
         isSuccess: true,
-        user,
+        user
       };
     },
 
@@ -189,6 +191,23 @@ export default {
       }
     ),
 
+    resendVerifiedEmail: combineResolvers(
+      isAuthenticated,
+      async (parent, { }, { models, me }) => {
+        const user = await models.User.findById(
+          me.id,
+        );
+        if (user.isVerified) {
+          return {
+            isSuccess: false,
+            message: 'Already verified!'
+          }
+        }
+        Email.sendVerifyEmail(user.email, user.verificationCode);
+        return { isSuccess: !!user };
+      }
+    ),
+
     forgotPassword: async (parent, { email }, { models }) => {
       const user = await models.User.findOneAndUpdate(
         { email },
@@ -204,11 +223,7 @@ export default {
       };
     },
 
-    resetPassword: async (
-      parent,
-      { verificationCode, password },
-      { models }
-    ) => {
+    resetPassword: async (parent, { verificationCode, password }, { models }) => {
       try {
         const user = await models.User.findOne({
           forgotToken: verificationCode,
@@ -228,23 +243,23 @@ export default {
         userNewPassword.save();
         return {
           token: createToken(userNewPassword, process.env.SECRET, "10m"),
-          isSuccess: true,
+          isSuccess: true
         };
       } catch (error) {
         return {
           isSuccess: false,
           message: `${error}`,
-        };
+        }
       }
     },
   },
 
-  User: {
-    // messages: async (user, args, { models }) => {
-    //   const messages = await models.Message.find({
-    //     userId: user.id,
-    //   });
-    //   return messages;
-    // },
-  },
+  // User: {
+  //   // messages: async (user, args, { models }) => {
+  //   //   const messages = await models.Message.find({
+  //   //     userId: user.id,
+  //   //   });
+  //   //   return messages;
+  //   // },
+  // },
 };

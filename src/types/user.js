@@ -1,6 +1,6 @@
-import { gql } from "apollo-server-express";
+const { gql } = require('apollo-server');
 
-export default gql`
+module.exports = gql`
   extend type Query {
     users: [UsersResponse]!
     user(id: ID!): User
@@ -18,6 +18,8 @@ export default gql`
     changePassword(password: String!, newPassword: String!): TokenMutationResponse!
     resetPassword(verificationCode: String!, password: String!): TokenMutationResponse!
     forgotPassword(email: String!): MutationResponse!
+
+    resendVerifiedEmail: MutationResponse!
   }
 
   input ProfileInput {

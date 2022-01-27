@@ -1,8 +1,7 @@
 /* eslint-disable func-names */
-import mongoose from "mongoose";
-
-import bcrypt from "bcrypt";
-import isEmail from "validator/lib/isEmail";
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const isEmail = require("validator/lib/isEmail");
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -95,4 +94,4 @@ userSchema.methods.validatePassword = async function (password) {
 
 const User = mongoose.model("User", userSchema);
 
-export default User;
+module.exports = { User };

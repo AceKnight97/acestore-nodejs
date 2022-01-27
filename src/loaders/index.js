@@ -1,4 +1,6 @@
-import * as user from './user';
-import * as category from './category';
+const user = require('./user');
 
-export default { user, category };
+
+module.exports = {
+  user
+};

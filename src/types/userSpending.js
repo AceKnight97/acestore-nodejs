@@ -1,7 +1,6 @@
-import { gql } from "apollo-server-express";
+const { gql } = require('apollo-server');
 
-
-export default gql`
+module.exports = gql`
   extend type Query {
     dailyInfo(date: String!): SpendingResponse
     insight(from: String!, to: String!): [SpendingResponse]!
@@ -16,7 +15,7 @@ export default gql`
   type Log {
     title: String!
     money: Float!
-    details: String!
+    details: String
   }
 
   type SpendingResponse {
@@ -36,7 +35,7 @@ export default gql`
   input LogInput {
     title: String!
     money: Float!
-    details: String!
+    details: String
   }
 
   input UpdateDailyInput {
