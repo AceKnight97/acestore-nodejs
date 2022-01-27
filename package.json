@@ -1,0 +1,54 @@
+{
+  "name": "save-money-electron",
+  "version": "1.0.0",
+  "description": "Api to log money spending",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon --exec babel-node src/index.js",
+    "test:run-server": "TEST_DATABASE_URL=mongodb://localhost:27017/mytestdatabase npm start",
+    "test:execute-test": "TEST_DATABASE_URL=mongodb://localhost:27017/mytestdatabase mocha --require @babel/register 'src/**/*.spec.js'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dhdquang/save-money-electron.git"
+  },
+  "keywords": [
+    "graphql",
+    "mongodb"
+  ],
+  "author": "quang dao <dhdquang@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dhdquang/save-money-electron/issues"
+  },
+  "homepage": "https://savenote.herokuapp.com/",
+  "dependencies": {
+    "@sendgrid/mail": "^7.4.4",
+    "apollo-server": "^2.24.0",
+    "apollo-server-express": "^2.24.0",
+    "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
+    "dataloader": "^2.0.0",
+    "dotenv": "^9.0.1",
+    "express": "^4.17.1",
+    "generate-password": "^1.6.0",
+    "graphql": "^15.5.0",
+    "graphql-iso-date": "^3.6.1",
+    "graphql-resolvers": "^0.4.2",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.1",
+    "mongoose": "^5.12.7",
+    "nodemon": "^2.0.12",
+    "uuid": "^8.3.2",
+    "validator": "^13.6.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.16",
+    "@babel/core": "^7.14.0",
+    "@babel/node": "^7.13.13",
+    "@babel/preset-env": "^7.14.1",
+    "@babel/register": "^7.13.16"
+  }
+}
