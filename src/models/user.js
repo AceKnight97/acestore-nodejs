@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema({
   signUpDate: {
     type: Date,
   },
-  
+
   // END NEW
 
   isVerified: {
@@ -56,8 +56,9 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   resetPasswordExpires: Date,
-  userSpending: {
-    type: mongoose.Schema.Types.ObjectId, ref: 'UserSpending',
+  foodOrder: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "FoodOrder",
   },
 });
 

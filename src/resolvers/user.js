@@ -6,7 +6,6 @@ const moment = require("moment");
 const Email = require("../helper");
 const { isAdmin, isAuthenticated } = require("./authorization");
 
-
 const createToken = async (user, secret, expiresIn) => {
   const { id, email, username, role } = user;
   const token = await jwt.sign({ id, email, username, role }, secret, {
@@ -51,14 +50,13 @@ module.exports = {
       return user || {};
     },
     me: async (parent, args, { models, me }) => {
+      console.log(`🚀 Server ready at ${me}`);
       if (!me) {
         return {};
       }
       const user = await models.User.findById(me.id);
-      const { firstDate, totalIncome, totalSpending, moneyLeft } =
-        await getLogInfo(models, me.id);
-      _.assign(user, { firstDate, totalIncome, totalSpending, moneyLeft });
-      return user || {};
+      console.log({ user });
+      return user;
     },
   },
 
@@ -83,6 +81,7 @@ module.exports = {
     signIn: async (parent, { username, password }, { models, secret }) => {
       const user = await models.User.findByLogin(username);
 
+      console.log({ username, user });
       if (!user) {
         throw new UserInputError("No user found with this login credentials.");
       }
@@ -102,14 +101,10 @@ module.exports = {
         }
         throw new AuthenticationError("Invalid password.");
       }
-      const { firstDate, totalIncome, totalSpending, moneyLeft } =
-        await getLogInfo(models, user.id);
-      _.assign(user, { firstDate, totalIncome, totalSpending, moneyLeft });
-
       return {
         token: createToken(user, secret, "1h"),
         isSuccess: true,
-        user
+        user,
       };
     },
 
@@ -193,15 +188,13 @@ module.exports = {
 
     resendVerifiedEmail: combineResolvers(
       isAuthenticated,
-      async (parent, { }, { models, me }) => {
-        const user = await models.User.findById(
-          me.id,
-        );
+      async (parent, {}, { models, me }) => {
+        const user = await models.User.findById(me.id);
         if (user.isVerified) {
           return {
             isSuccess: false,
-            message: 'Already verified!'
-          }
+            message: "Already verified!",
+          };
         }
         Email.sendVerifyEmail(user.email, user.verificationCode);
         return { isSuccess: !!user };
@@ -223,7 +216,11 @@ module.exports = {
       };
     },
 
-    resetPassword: async (parent, { verificationCode, password }, { models }) => {
+    resetPassword: async (
+      parent,
+      { verificationCode, password },
+      { models }
+    ) => {
       try {
         const user = await models.User.findOne({
           forgotToken: verificationCode,
@@ -243,23 +240,14 @@ module.exports = {
         userNewPassword.save();
         return {
           token: createToken(userNewPassword, process.env.SECRET, "10m"),
-          isSuccess: true
+          isSuccess: true,
         };
       } catch (error) {
         return {
           isSuccess: false,
           message: `${error}`,
-        }
+        };
       }
     },
   },
-
-  // User: {
-  //   // messages: async (user, args, { models }) => {
-  //   //   const messages = await models.Message.find({
-  //   //     userId: user.id,
-  //   //   });
-  //   //   return messages;
-  //   // },
-  // },
 };

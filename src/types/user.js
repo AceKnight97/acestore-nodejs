@@ -1,4 +1,4 @@
-const { gql } = require('apollo-server');
+const { gql } = require("apollo-server");
 
 module.exports = gql`
   extend type Query {
@@ -11,12 +11,18 @@ module.exports = gql`
     signUp(username: String!, email: String!, password: String!): SignUpData!
 
     signIn(username: String!, password: String!): SignInData!
-   
+
     updateUser(profileInput: ProfileInput!): MutationResponse!
     deleteUser(id: ID!): MutationResponse!
     verifiedEmail(verificationCode: String!): MutationResponse!
-    changePassword(password: String!, newPassword: String!): TokenMutationResponse!
-    resetPassword(verificationCode: String!, password: String!): TokenMutationResponse!
+    changePassword(
+      password: String!
+      newPassword: String!
+    ): TokenMutationResponse!
+    resetPassword(
+      verificationCode: String!
+      password: String!
+    ): TokenMutationResponse!
     forgotPassword(email: String!): MutationResponse!
 
     resendVerifiedEmail: MutationResponse!

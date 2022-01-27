@@ -1,6 +1,9 @@
-const {User} = require("./user");
-const {UserSpending} = require("./userSpending");
+const { User } = require("./user");
+const { FoodOrder } = require("./foodOrder");
+const { Food } = require("./food");
 
 module.exports = {
-  User,UserSpending
-}
+  User,
+  FoodOrder,
+  Food,
+};
