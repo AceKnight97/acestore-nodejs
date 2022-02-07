@@ -50,7 +50,7 @@ module.exports = {
       return user || {};
     },
     me: async (parent, args, { models, me }) => {
-      console.log(`🚀 Server ready at ${me}`);
+      console.log(`🚀 a ${me}`);
       if (!me) {
         return {};
       }

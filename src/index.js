@@ -12,39 +12,35 @@ connectDb();
 const secret = process.env.SECRET;
 
 const getMe = async (req) => {
-  const token = req.headers['access-token'];
-
+  const token = req.headers["access-token"];
+  console.log({ token, a: req.headers });
   if (token) {
     try {
       const decoded = await jwt.verify(token, secret);
+      console.log({ decoded, token, secret });
       return decoded;
     } catch (e) {
-      throw new AuthenticationError(
-        'Your session expired. Sign in again.',
-      );
+      throw new AuthenticationError("Your session expired. Sign in again.");
     }
   }
   return null;
 };
 
-const server = new ApolloServer({ 
-  typeDefs, 
+const server = new ApolloServer({
+  typeDefs,
   resolvers,
   // context: {models},
   formatError: (error) => {
     const message = error.message
-      .replace('SequelizeValidationError: ', '')
-      .replace('Validation error: ', '');
+      .replace("SequelizeValidationError: ", "")
+      .replace("Validation error: ", "");
 
     return {
       ...error,
       message,
     };
   },
-  context: async ({
-    req,
-    connection
-  }) => {
+  context: async ({ req, connection }) => {
     if (connection) {
       return {
         models,
@@ -69,6 +65,6 @@ const server = new ApolloServer({
   },
 });
 
-server.listen({ port: process.env.PORT || 4000 }).then(({ url }) => {
+server.listen({ port: process.env.PORT || 8080 }).then(({ url }) => {
   console.log(`🚀 Server ready at ${url}`);
 });
