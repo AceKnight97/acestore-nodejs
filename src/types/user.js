@@ -34,6 +34,7 @@ module.exports = gql`
     address: String
     phone: String
     dob: Date
+    role: String
   }
 
   type SignUpData {

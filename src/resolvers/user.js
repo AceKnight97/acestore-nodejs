@@ -50,12 +50,11 @@ module.exports = {
       return user || {};
     },
     me: async (parent, args, { models, me }) => {
-      console.log(`🚀 a ${me}`);
+      // console.log(`🚀 a ${me}`);
       if (!me) {
         return {};
       }
       const user = await models.User.findById(me.id);
-      console.log({ user });
       return user;
     },
   },
@@ -63,7 +62,7 @@ module.exports = {
   Mutation: {
     signUp: async (
       parent,
-      { username, email, password },
+      { username, email, password, phone, address },
       { models, secret }
     ) => {
       const user = await models.User.create({
@@ -73,6 +72,8 @@ module.exports = {
         isVerified: false,
         verificationCode: Math.floor(100000 + Math.random() * 900000),
         signUpDate: moment(),
+        phone,
+        address,
       });
       Email.sendVerifyEmail(email, user.verificationCode);
       return { token: createToken(user, secret, "10m"), isSuccess: true };
@@ -81,7 +82,7 @@ module.exports = {
     signIn: async (parent, { username, password }, { models, secret }) => {
       const user = await models.User.findByLogin(username);
 
-      console.log({ username, user });
+      // console.log({ username, user });
       if (!user) {
         throw new UserInputError("No user found with this login credentials.");
       }

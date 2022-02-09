@@ -55,7 +55,9 @@ const userSchema = new mongoose.Schema({
   forgotToken: {
     type: String,
   },
-  resetPasswordExpires: Date,
+  resetPasswordExpires: {
+    Date,
+  },
   foodOrder: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "FoodOrder",

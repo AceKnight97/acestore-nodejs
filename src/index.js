@@ -13,11 +13,11 @@ const secret = process.env.SECRET;
 
 const getMe = async (req) => {
   const token = req.headers["access-token"];
-  console.log({ token, a: req.headers });
+  // console.log({ token, a: req.headers });
   if (token) {
     try {
       const decoded = await jwt.verify(token, secret);
-      console.log({ decoded, token, secret });
+      // console.log({ decoded, token, secret });
       return decoded;
     } catch (e) {
       throw new AuthenticationError("Your session expired. Sign in again.");
@@ -29,6 +29,7 @@ const getMe = async (req) => {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  playground: true,
   // context: {models},
   formatError: (error) => {
     const message = error.message

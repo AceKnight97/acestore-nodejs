@@ -2,143 +2,98 @@ const { combineResolvers } = require("graphql-resolvers");
 const { isAuthenticated } = require("./authorization");
 const _ = require("lodash");
 const moment = require("moment");
+const models = require("../models");
+const Email = require("../helper");
 
 const timeIso = (x) => moment(x, "DD/MM/YYYY").toISOString();
-const timeUtc = (x) => moment(x, "DD/MM/YYYY").utc();
 
-const SPENDING_MESSAGES = {
-  DUPLICATED_DATE: "DUPLICATED_DATE",
-  NO_INFO: "NO_INFO",
-  INVALID_DATE: "INVALID_DATE",
+const handleAnyCustomerOrder = async (customer = {}) => {
+  const { email, username, password, address, phone } = customer;
+  const isExisted = await models.User.findOne({ email });
+  if (isExisted) {
+    return isExisted;
+  }
+  const user = await models.User.create({
+    username,
+    email,
+    password,
+    isVerified: false,
+    verificationCode: Math.floor(100000 + Math.random() * 900000),
+    signUpDate: moment(),
+    address,
+    phone,
+    role: "Client",
+  });
+  Email.sendVerifyEmail(email, user.verificationCode);
+  return user;
 };
-const {
-  DUPLICATED_DATE,
-  // NO_INFO, INVALID_DATE
-} = SPENDING_MESSAGES;
-
-// const INVALID_DATE_FORMAT = {
-//   isSuccess: false,
-//   message: INVALID_DATE,
-// };
 
 module.exports = {
   Query: {
-    dailyInfo: async (parent, { date }, { models, me }) => {
-      const data = await models.UserSpending.findOne({
-        date,
-        user: me.id,
-      });
-
-      if (_.isEmpty(data)) {
-        return null;
+    orderHistory: async (parent, { date, isAll = false }, { me }) => {
+      if (!me) {
+        return [];
       }
-
-      const tempObj = {
-        id: data._id,
-        date: data.date,
-        logs: data.logs,
-        income: data.income,
-        notes: data.notes,
-      };
-
-      return tempObj;
-    },
-
-    insight: async (parent, { from, to }, { models, me }) => {
-      const data = await models.UserSpending.find({
-        user: me.id,
-        iso: {
-          $gte: timeIso(from),
-          $lte: timeIso(to),
+      const filterObject = {
+        createdAt: {
+          $gte: moment(date, "DD/MM/YYYY").startOf("D").toISOString(),
+          $lte: moment(date, "DD/MM/YYYY").endOf("D").toISOString(),
         },
-      }).sort({ iso: "asc" });
-
-      return _.map(data, (x) => ({
-        id: x._id,
-        date: x.date,
-        logs: x.logs,
-        income: x.income,
-        notes: x.notes,
-      }));
+        user: me.id,
+      };
+      if (isAll && me.role === "Admin") {
+        delete filterObject.user;
+      }
+      try {
+        const res = await models.FoodOrder.find(filterObject).sort({
+          createdAt: "asc",
+        });
+        return res;
+      } catch (error) {
+        return [];
+      }
     },
   },
 
   Mutation: {
-    addDailyInfo: combineResolvers(
+    createOrder: combineResolvers(
       isAuthenticated,
-      async (parent, { input }, { models, me }) => {
-        const { date } = input;
-        const data = await models.UserSpending.findOne({
-          date,
-          user: me.id,
+      async (parent, { input }, { me }) => {
+        const res = { isSuccess: false, message: "" };
+        if (!me) {
+          _.assign(res, { message: "No current user" });
+          return res;
+        }
+        const createdAt = Date.now();
+        input.forEach((x) => {
+          _.assign(x, { user: me.id, createdAt });
         });
-
-        if (data) {
-          return {
-            isSuccess: false,
-            message: DUPLICATED_DATE,
-          };
-        }
-        input.user = me.id;
-
         try {
-          await models.UserSpending.create({
-            ...input,
-            iso: timeIso(date),
-            utc: timeUtc(date),
-          });
-          return {
-            isSuccess: true,
-          };
+          await models.FoodOrder.create(input);
         } catch (error) {
-          return {
-            isSuccess: false,
-            message: error,
-          };
+          _.assign(res, { message: error });
+          return res;
         }
+        _.assign(res, { isSuccess: true });
+        return res;
       }
     ),
-
-    updateLogs: combineResolvers(
-      isAuthenticated,
-      async (parent, { input }, { models, me }) => {
-        const { id, logs } = input;
-        try {
-          await models.UserSpending.findOneAndUpdate(
-            { user: me.id, _id: id },
-            { logs }
-          );
-          return {
-            isSuccess: true,
-          };
-        } catch (error) {
-          return {
-            isSuccess: false,
-            message: error,
-          };
-        }
+    createAnyCustomerOrder: async (parent, { input }) => {
+      const { customer, orders } = input || {};
+      const res = { isSuccess: false, message: "" };
+      const me = await handleAnyCustomerOrder(customer);
+      const createdAt = Date.now();
+      orders.forEach((x) => {
+        _.assign(x, { user: me.id, createdAt });
+      });
+      try {
+        await models.FoodOrder.create(orders);
+      } catch (error) {
+        _.assign(res, { message: error });
+        return res;
       }
-    ),
-
-    updateIncome: combineResolvers(
-      isAuthenticated,
-      async (parent, { input }, { models, me }) => {
-        const { id, income, notes } = input;
-        try {
-          await models.UserSpending.findOneAndUpdate(
-            { user: me.id, _id: id },
-            { income, notes }
-          );
-          return {
-            isSuccess: true,
-          };
-        } catch (error) {
-          return {
-            isSuccess: false,
-            message: error,
-          };
-        }
-      }
-    ),
+      _.assign(res, { isSuccess: true });
+      return res;
+    },
   },
 };

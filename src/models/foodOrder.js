@@ -13,9 +13,11 @@ const foodOrderSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: true,
     },
     notes: {
+      type: String,
+    },
+    destination: {
       type: String,
     },
     status: {
@@ -27,6 +29,7 @@ const foodOrderSchema = new mongoose.Schema(
       required: true,
     },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    food: { type: mongoose.Schema.Types.ObjectId, ref: "Food" },
   },
   {
     timestamps: true,

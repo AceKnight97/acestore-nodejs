@@ -2,6 +2,7 @@ const { gql } = require("apollo-server");
 const User = require("./user");
 const UserSpending = require("./userSpending");
 const Food = require("./food");
+const FoodOrder = require("./foodOrder");
 
 const linkSchema = gql`
   scalar Date
@@ -18,4 +19,4 @@ const linkSchema = gql`
     _: Boolean
   }
 `;
-module.exports = [linkSchema, User, UserSpending, Food];
+module.exports = [linkSchema, User, Food, FoodOrder];

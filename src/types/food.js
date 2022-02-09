@@ -6,10 +6,21 @@ module.exports = gql`
   }
 
   extend type Mutation {
-    addFood(input: AddFood!): MutationResponse!
+    addFood(input: [AddFoodInput]!): MutationResponse!
+    updateFood(input: [UpdateFoodInput]!): MutationResponse!
+    deleteFood(input: [ID]!): MutationResponse!
   }
 
-  input Food {
+  input AddFoodInput {
+    title: String
+    name: String
+    rating: Int
+    price: Float
+    quantityType: String
+  }
+
+  input UpdateFoodInput {
+    id: ID!
     title: String
     name: String
     rating: Int
@@ -25,10 +36,5 @@ module.exports = gql`
     price: Float
     quantityType: String
     createdAt: String
-  }
-
-  input AddFood {
-    email: String
-    food: [Food]
   }
 `;
