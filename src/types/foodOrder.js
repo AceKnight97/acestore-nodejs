@@ -10,7 +10,7 @@ module.exports = gql`
     createAnyCustomerOrder(input: AnyCustomerOrderInput!): MutationResponse!
   }
 
-  type OrderHistoryResponse {
+  type FoodOrder {
     id: ID!
     food: ID!
     quantity: Float
@@ -20,6 +20,12 @@ module.exports = gql`
     status: String
     price: Float
     destination: String
+  }
+
+  type OrderHistoryResponse {
+    food: FoodResponse
+    foodOrder: FoodOrder
+    user: User
   }
 
   input AnyCustomerOrderInput {

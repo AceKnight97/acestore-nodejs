@@ -48,7 +48,18 @@ module.exports = {
         const res = await models.FoodOrder.find(filterObject).sort({
           createdAt: "asc",
         });
-        return res;
+        const foodArr = res.map((x) => models.Food.findById(x.food));
+        const foodData = await Promise.all(foodArr);
+        const final = [];
+        res.forEach((x, i) => {
+          final.push({
+            food: foodData[i],
+            foodOrder: x,
+            user: me,
+          });
+        });
+        // console.log({ final });
+        return final;
       } catch (error) {
         return [];
       }

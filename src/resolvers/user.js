@@ -5,6 +5,7 @@ const _ = require("lodash");
 const moment = require("moment");
 const Email = require("../helper");
 const { isAdmin, isAuthenticated } = require("./authorization");
+const models = require("../models");
 
 const createToken = async (user, secret, expiresIn) => {
   const { id, email, username, role } = user;
@@ -14,7 +15,7 @@ const createToken = async (user, secret, expiresIn) => {
   return token;
 };
 
-const getLogInfo = async (models, id) => {
+const getLogInfo = async (id) => {
   const data = await models.UserSpending.find({
     user: id,
   }).sort({ iso: "asc" });
@@ -38,18 +39,18 @@ const getLogInfo = async (models, id) => {
 
 module.exports = {
   Query: {
-    users: async (parent, args, { models }) => {
+    users: async (parent, args, {}) => {
       const users = await models.User.find();
       return users || [];
     },
-    user: async (parent, { id }, { models }) => {
+    user: async (parent, { id }, {}) => {
       const user = await models.User.findById(id);
       const { firstDate, totalIncome, totalSpending, moneyLeft } =
-        await getLogInfo(models, id);
+        await getLogInfo(id);
       _.assign(user, { firstDate, totalIncome, totalSpending, moneyLeft });
       return user || {};
     },
-    me: async (parent, args, { models, me }) => {
+    me: async (parent, args, { me }) => {
       // console.log(`🚀 a ${me}`);
       if (!me) {
         return {};
@@ -63,7 +64,7 @@ module.exports = {
     signUp: async (
       parent,
       { username, email, password, phone, address },
-      { models, secret }
+      { secret }
     ) => {
       const user = await models.User.create({
         username,
@@ -79,8 +80,8 @@ module.exports = {
       return { token: createToken(user, secret, "10m"), isSuccess: true };
     },
 
-    signIn: async (parent, { username, password }, { models, secret }) => {
-      const user = await models.User.findByLogin(username);
+    signIn: async (parent, { email, password }, { secret }) => {
+      const user = await models.User.findByLogin(email);
 
       // console.log({ username, user });
       if (!user) {
@@ -103,15 +104,17 @@ module.exports = {
         throw new AuthenticationError("Invalid password.");
       }
       return {
-        token: createToken(user, secret, "1h"),
         isSuccess: true,
-        user,
+        data: {
+          token: createToken(user, secret, "1h"),
+          user,
+        },
       };
     },
 
     updateUser: combineResolvers(
       isAuthenticated,
-      async (parent, args, { models, me }) => {
+      async (parent, args, { me }) => {
         const { profileInput } = args;
         const user = await models.User.findByIdAndUpdate(
           me.id,
@@ -124,7 +127,7 @@ module.exports = {
 
     changePassword: combineResolvers(
       isAuthenticated,
-      async (parent, { password, newPassword }, { models, me }) => {
+      async (parent, { password, newPassword }, { me }) => {
         try {
           const user = await models.User.findById(me.id);
           const isValid = await user.validatePassword(password);
@@ -166,7 +169,7 @@ module.exports = {
 
     verifiedEmail: combineResolvers(
       isAuthenticated,
-      async (parent, { verificationCode }, { models, me }) => {
+      async (parent, { verificationCode }, { me }) => {
         try {
           const verified = await models.User.findOneAndUpdate(
             { verificationCode, _id: me.id },
@@ -189,7 +192,7 @@ module.exports = {
 
     resendVerifiedEmail: combineResolvers(
       isAuthenticated,
-      async (parent, {}, { models, me }) => {
+      async (parent, {}, { me }) => {
         const user = await models.User.findById(me.id);
         if (user.isVerified) {
           return {
@@ -202,7 +205,7 @@ module.exports = {
       }
     ),
 
-    forgotPassword: async (parent, { email }, { models }) => {
+    forgotPassword: async (parent, { email }, {}) => {
       const user = await models.User.findOneAndUpdate(
         { email },
         {
@@ -217,11 +220,7 @@ module.exports = {
       };
     },
 
-    resetPassword: async (
-      parent,
-      { verificationCode, password },
-      { models }
-    ) => {
+    resetPassword: async (parent, { verificationCode, password }, {}) => {
       try {
         const user = await models.User.findOne({
           forgotToken: verificationCode,

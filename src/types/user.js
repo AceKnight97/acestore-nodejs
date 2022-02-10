@@ -10,7 +10,7 @@ module.exports = gql`
   extend type Mutation {
     signUp(username: String!, email: String!, password: String!): SignUpData!
 
-    signIn(username: String!, password: String!): SignInData!
+    signIn(email: String!, password: String!): SignInData!
 
     updateUser(profileInput: ProfileInput!): MutationResponse!
     deleteUser(id: ID!): MutationResponse!
@@ -42,10 +42,14 @@ module.exports = gql`
     isSuccess: Boolean
   }
 
-  type SignInData {
+  type SignInDataInner {
     token: String!
-    isSuccess: Boolean
     user: User
+  }
+
+  type SignInData {
+    isSuccess: Boolean
+    data: SignInDataInner
   }
 
   type UsersResponse {
