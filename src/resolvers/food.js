@@ -47,7 +47,19 @@ module.exports = {
               return res;
             }
             _.assign(x, { updatedAt });
-            pendingPromises.push(models.Food.findOneAndUpdate(x.id, x));
+            pendingPromises.push(
+              models.Food.findOneAndUpdate(
+                { _id: x.id },
+                {
+                  title: x.title,
+                  name: x.name,
+                  rating: x.rating,
+                  price: x.price,
+                  quantityType: x.quantityType,
+                  image: x.image,
+                }
+              )
+            );
           });
           await Promise.all(pendingPromises);
           return { isSuccess: true };

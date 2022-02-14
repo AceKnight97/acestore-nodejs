@@ -20,6 +20,7 @@ const foodSchema = new mongoose.Schema(
     },
     quantityType: {
       type: String,
+      default: "PACKAGE",
     },
     image: {
       type: String,

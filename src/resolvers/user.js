@@ -8,10 +8,38 @@ const { isAdmin, isAuthenticated } = require("./authorization");
 const models = require("../models");
 
 const createToken = async (user, secret, expiresIn) => {
-  const { id, email, username, role } = user;
-  const token = await jwt.sign({ id, email, username, role }, secret, {
-    expiresIn,
-  });
+  const {
+    id,
+    email,
+    username,
+    role,
+    address,
+    phone,
+    signUpDate,
+    status,
+    gender,
+    dob,
+    isVerified,
+  } = user;
+  const token = await jwt.sign(
+    {
+      id,
+      email,
+      username,
+      role,
+      address,
+      phone,
+      status,
+      gender,
+      dob,
+      isVerified,
+      signUpDate,
+    },
+    secret,
+    {
+      expiresIn,
+    }
+  );
   return token;
 };
 

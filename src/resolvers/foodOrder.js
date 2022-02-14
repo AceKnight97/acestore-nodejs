@@ -29,6 +29,20 @@ const handleAnyCustomerOrder = async (customer = {}) => {
   return user;
 };
 
+const getOrderHistory = async (res = [], me = {}) => {
+  const final = [];
+  const foodData = res.map(async (x) => await models.Food.findById(x.food));
+  // console.log({ foodData });
+  res.forEach((x, i) => {
+    final.push({
+      food: foodData[i],
+      foodOrder: x,
+      user: me,
+    });
+  });
+  return final;
+};
+
 module.exports = {
   Query: {
     orderHistory: async (parent, { date, isAll = false }, { me }) => {
@@ -49,16 +63,8 @@ module.exports = {
         const res = await models.FoodOrder.find(filterObject).sort({
           createdAt: "asc",
         });
-        const foodArr = res.map((x) => models.Food.findById(x.food));
-        const foodData = await Promise.all(foodArr);
-        const final = [];
-        res.forEach((x, i) => {
-          final.push({
-            food: foodData[i],
-            foodOrder: x,
-            user: me,
-          });
-        });
+        // console.log({ res });
+        const final = await getOrderHistory(res, me);
         // console.log({ final });
         return final;
       } catch (error) {
