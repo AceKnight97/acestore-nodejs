@@ -8,6 +8,7 @@ module.exports = gql`
   extend type Mutation {
     createOrder(input: [OrderInput]!): MutationResponse!
     createAnyCustomerOrder(input: AnyCustomerOrderInput!): MutationResponse!
+    changeOrderStatus(status: String!, orderId: ID!): MutationResponse!
   }
 
   type FoodOrder {

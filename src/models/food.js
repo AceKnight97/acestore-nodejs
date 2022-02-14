@@ -21,6 +21,9 @@ const foodSchema = new mongoose.Schema(
     quantityType: {
       type: String,
     },
+    image: {
+      type: String,
+    },
     createdAt: {
       type: Date,
       required: true,
@@ -28,7 +31,6 @@ const foodSchema = new mongoose.Schema(
     },
     updatedAt: {
       type: Date,
-      required: true,
     },
   },
   {

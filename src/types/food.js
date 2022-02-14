@@ -17,6 +17,7 @@ module.exports = gql`
     rating: Int
     price: Float
     quantityType: String
+    image: String
   }
 
   input UpdateFoodInput {
@@ -26,6 +27,7 @@ module.exports = gql`
     rating: Int
     price: Float
     quantityType: String
+    image: String
   }
 
   type FoodResponse {
@@ -36,5 +38,6 @@ module.exports = gql`
     price: Float
     quantityType: String
     createdAt: String
+    image: String
   }
 `;

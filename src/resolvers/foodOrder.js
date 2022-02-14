@@ -4,6 +4,7 @@ const _ = require("lodash");
 const moment = require("moment");
 const models = require("../models");
 const Email = require("../helper");
+const MESSAGES = require("../constants/messages");
 
 const timeIso = (x) => moment(x, "DD/MM/YYYY").toISOString();
 
@@ -106,5 +107,29 @@ module.exports = {
       _.assign(res, { isSuccess: true });
       return res;
     },
+    changeOrderStatus: combineResolvers(
+      isAuthenticated,
+      async (parent, { status, orderId }, { me }) => {
+        const res = { isSuccess: false, message: "" };
+        if (me?.role !== "Admin") {
+          _.assign(res, { message: MESSAGES.NOT_ADMIN });
+          return res;
+        }
+        try {
+          const order = await models.FoodOrder.findOneAndUpdate(
+            {
+              _id: orderId,
+            },
+            {
+              status,
+            }
+          );
+          return { isSuccess: Boolean(order) };
+        } catch (error) {
+          _.assign(res, { message: error });
+          return res;
+        }
+      }
+    ),
   },
 };
