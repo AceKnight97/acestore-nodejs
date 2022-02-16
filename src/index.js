@@ -29,7 +29,6 @@ const getMe = async (req) => {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  playground: true,
   // context: {models},
   formatError: (error) => {
     const message = error.message
