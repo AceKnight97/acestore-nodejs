@@ -1,10 +1,15 @@
 const { combineResolvers } = require("graphql-resolvers");
 const { isAuthenticated } = require("./authorization");
+const { PubSub } = require("apollo-server");
 const _ = require("lodash");
 const moment = require("moment");
 const models = require("../models");
 const Email = require("../helper");
+const pubsub = new PubSub();
 const MESSAGES = require("../constants/messages");
+const { ALL_SUBSCRIPTIONS } = require("../constants");
+
+const { NEW_FOOD_ORDER } = ALL_SUBSCRIPTIONS;
 
 const timeIso = (x) => moment(x, "DD/MM/YYYY").toISOString();
 
@@ -87,7 +92,11 @@ module.exports = {
           _.assign(x, { user: me.id, createdAt });
         });
         try {
-          await models.FoodOrder.create(input);
+          const foodOrder = await models.FoodOrder.create(input);
+          const newFoodOrders = await getOrderHistory(foodOrder, me);
+          pubsub.publish(NEW_FOOD_ORDER, {
+            newFoodOrders,
+          });
         } catch (error) {
           _.assign(res, { message: error });
           return res;
@@ -137,5 +146,11 @@ module.exports = {
         }
       }
     ),
+  },
+
+  Subscription: {
+    newFoodOrders: {
+      subscribe: () => pubsub.asyncIterator([NEW_FOOD_ORDER]),
+    },
   },
 };

@@ -1,5 +1,5 @@
 {
-  "name": "Save-Money-App_Server",
+  "name": "Acestore_Server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,9 +12,13 @@
   "dependencies": {
     "@sendgrid/mail": "^7.4.5",
     "apollo-server": "^2.14.2",
+    "apollo-server-core": "^3.6.3",
+    "apollo-server-express": "^2.25.3",
     "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
     "dataloader": "^2.0.0",
     "dotenv": "^8.2.0",
+    "express": "^4.17.3",
     "graphql": "^15.5.1",
     "graphql-iso-date": "^3.6.1",
     "graphql-resolvers": "^0.4.2",

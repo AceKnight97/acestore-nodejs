@@ -10,15 +10,11 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    unique: true,
-    required: true,
     validate: [isEmail, "No valid email address provided."],
   },
   password: {
     type: String,
     required: true,
-    minlength: 6,
-    maxlength: 12,
   },
   role: {
     type: String,
@@ -36,6 +32,8 @@ const userSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
+    unique: true,
+    required: true,
   },
   dob: {
     type: Date,

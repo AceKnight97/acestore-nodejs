@@ -1,4 +1,3 @@
-
 const QUERIES = `
 
 query{
@@ -41,7 +40,6 @@ query {
 
 
 `;
-
 
 const MUTATIONS = `
 
@@ -104,4 +102,8 @@ const Token = `
 }
 `;
 
+const ALL_SUBSCRIPTIONS = {
+  NEW_FOOD_ORDER: "NEW_FOOD_ORDER",
+};
 
+module.exports = { ALL_SUBSCRIPTIONS };

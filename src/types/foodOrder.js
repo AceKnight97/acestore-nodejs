@@ -11,6 +11,10 @@ module.exports = gql`
     changeOrderStatus(status: String!, orderId: ID!): MutationResponse!
   }
 
+  extend type Subscription {
+    newFoodOrders: [OrderHistoryResponse]
+  }
+
   type FoodOrder {
     id: ID!
     food: ID!

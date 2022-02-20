@@ -103,6 +103,7 @@ module.exports = {
         signUpDate: moment(),
         phone,
         address,
+        role: "Client",
       });
       Email.sendVerifyEmail(email, user.verificationCode);
       return { token: createToken(user, secret, "10m"), isSuccess: true };
