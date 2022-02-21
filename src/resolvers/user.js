@@ -113,7 +113,6 @@ module.exports = {
 
     signIn: async (parent, { email, password }, {}) => {
       const user = await models.User.findByLogin(email);
-      console.log({ secret });
 
       // console.log({ username, user });
       if (!user) {

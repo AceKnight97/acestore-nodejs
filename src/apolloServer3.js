@@ -12,6 +12,7 @@ const express = require("express");
 const { createServer } = require("http");
 
 const secret = process.env.SECRET;
+const PORT = process.env.PORT;
 
 const getMe = async (req) => {
   const token = req.headers["access-token"];
@@ -88,15 +89,18 @@ const server = new ApolloServer({
 });
 
 const app = express();
+const corsOptions = {
+  origin: "*",
+};
 
-server.applyMiddleware({ app, path: "/graphql" });
+server.applyMiddleware({ app, path: "/graphql", cors: corsOptions });
 
 const httpServer = createServer(app);
 server.installSubscriptionHandlers(httpServer);
 
 const startServer = () => {
-  httpServer.listen({ port: 8000 }, () => {
-    console.log("Apollo Server on http://localhost:8000/graphql");
+  httpServer.listen({ port: PORT }, () => {
+    console.log(`Apollo Server on http://localhost:${PORT}/graphql`);
   });
 
   // server
