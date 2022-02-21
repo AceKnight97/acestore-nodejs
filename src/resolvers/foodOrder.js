@@ -1,6 +1,6 @@
 const { combineResolvers } = require("graphql-resolvers");
 const { isAuthenticated } = require("./authorization");
-const { PubSub } = require("apollo-server");
+const { PubSub } = require("graphql-subscriptions");
 const _ = require("lodash");
 const moment = require("moment");
 const models = require("../models");

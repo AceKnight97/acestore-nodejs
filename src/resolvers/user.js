@@ -7,7 +7,9 @@ const Email = require("../helper");
 const { isAdmin, isAuthenticated } = require("./authorization");
 const models = require("../models");
 
-const createToken = async (user, secret, expiresIn) => {
+const secret = process.env.SECRET;
+
+const createToken = async (user, expiresIn) => {
   const {
     id,
     email,
@@ -92,7 +94,7 @@ module.exports = {
     signUp: async (
       parent,
       { username, email, password, phone, address },
-      { secret }
+      {}
     ) => {
       const user = await models.User.create({
         username,
@@ -106,11 +108,12 @@ module.exports = {
         role: "Client",
       });
       Email.sendVerifyEmail(email, user.verificationCode);
-      return { token: createToken(user, secret, "10m"), isSuccess: true };
+      return { token: createToken(user, "10m"), isSuccess: true };
     },
 
-    signIn: async (parent, { email, password }, { secret }) => {
+    signIn: async (parent, { email, password }, {}) => {
       const user = await models.User.findByLogin(email);
+      console.log({ secret });
 
       // console.log({ username, user });
       if (!user) {
@@ -124,7 +127,7 @@ module.exports = {
         });
         if (forgotPassword) {
           return {
-            token: createToken(user, secret, "1h"),
+            token: createToken(user, "1h"),
             srp: true,
             isSuccess: true,
             user,
@@ -135,7 +138,7 @@ module.exports = {
       return {
         isSuccess: true,
         data: {
-          token: createToken(user, secret, "1h"),
+          token: createToken(user, "1h"),
           user,
         },
       };
@@ -171,7 +174,7 @@ module.exports = {
           userNewPassword.save();
 
           return {
-            token: createToken(userNewPassword, process.env.SECRET, "1h"),
+            token: createToken(userNewPassword, "1h"),
             isSuccess: true,
           };
         } catch (error) {
@@ -268,7 +271,7 @@ module.exports = {
         );
         userNewPassword.save();
         return {
-          token: createToken(userNewPassword, process.env.SECRET, "10m"),
+          token: createToken(userNewPassword, "10m"),
           isSuccess: true,
         };
       } catch (error) {

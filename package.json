@@ -27,6 +27,7 @@
     "moment": "^2.29.1",
     "mongoose": "^5.9.17",
     "nodemon": "^2.0.4",
+    "socket.io": "^4.4.1",
     "validator": "^13.6.0"
   }
 }

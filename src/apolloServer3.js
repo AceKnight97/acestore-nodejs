@@ -1,13 +1,15 @@
 const { ApolloServerPluginDrainHttpServer } = require("apollo-server-core");
-const { ApolloServer, AuthenticationError } = require("apollo-server");
+const { ApolloServer, AuthenticationError } = require("apollo-server-express");
 const typeDefs = require("./types");
 const resolvers = require("./resolvers");
 const models = require("./models");
 const loaders = require("./loaders");
 const DataLoader = require("dataloader");
 const jwt = require("jsonwebtoken");
-const httpServer = require("./socketIO");
+// const httpServer = require("./socketIO");
 const cors = require("cors");
+const express = require("express");
+const { createServer } = require("http");
 
 const secret = process.env.SECRET;
 
@@ -82,16 +84,27 @@ const server = new ApolloServer({
   //     },
   //   },
   // ],
-  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  // plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
 });
 
+const app = express();
+
+server.applyMiddleware({ app, path: "/graphql" });
+
+const httpServer = createServer(app);
+server.installSubscriptionHandlers(httpServer);
+
 const startServer = () => {
-  server
-    .listen({ port: process.env.PORT || 8080 })
-    .then(({ url, subscriptionsUrl }) => {
-      console.log(`🚀 Server ready at ${url}`);
-      console.log(`🚀 Subscriptions ready at ${subscriptionsUrl}`);
-      // console.log(`🚀 Server ready at http://localhost:8080`);
-    });
+  httpServer.listen({ port: 8000 }, () => {
+    console.log("Apollo Server on http://localhost:8000/graphql");
+  });
+
+  // server
+  //   .listen({ port: process.env.PORT || 8080 })
+  //   .then(({ url, subscriptionsUrl }) => {
+  //     console.log(`🚀 Server ready at ${url}`);
+  //     console.log(`🚀 Subscriptions ready at ${subscriptionsUrl}`);
+  //     // console.log(`🚀 Server ready at http://localhost:8080`);
+  //   });
 };
 module.exports = startServer;
