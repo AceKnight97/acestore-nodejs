@@ -1,6 +1,5 @@
 const { gql } = require("apollo-server");
 const User = require("./user");
-const UserSpending = require("./userSpending");
 const Food = require("./food");
 const FoodOrder = require("./foodOrder");
 
