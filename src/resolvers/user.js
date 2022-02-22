@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const _ = require("lodash");
 const moment = require("moment");
 const Email = require("../helper");
+// const sendSMS = require("../helper/sendSMS");
 const { isAdmin, isAuthenticated } = require("./authorization");
 const models = require("../models");
 
@@ -45,41 +46,22 @@ const createToken = async (user, expiresIn) => {
   return token;
 };
 
-const getLogInfo = async (id) => {
-  const data = await models.UserSpending.find({
-    user: id,
-  }).sort({ iso: "asc" });
-  let totalSpending = 0;
-  let totalIncome = 0;
-
-  if (data?.length !== 0) {
-    _.forEach(data, (x) => {
-      const temp = _.sumBy(x.logs || [], (y) => y.money);
-      totalSpending += temp;
-      totalIncome += x.income || 0;
-    });
-  }
-  return {
-    firstDate: data?.[0]?.date || "",
-    totalSpending,
-    totalIncome,
-    moneyLeft: totalIncome - totalSpending,
-  };
-};
-
 module.exports = {
   Query: {
-    users: async (parent, args, {}) => {
-      const users = await models.User.find();
-      return users || [];
-    },
-    user: async (parent, { id }, {}) => {
-      const user = await models.User.findById(id);
-      const { firstDate, totalIncome, totalSpending, moneyLeft } =
-        await getLogInfo(id);
-      _.assign(user, { firstDate, totalIncome, totalSpending, moneyLeft });
-      return user || {};
-    },
+    users: combineResolvers(isAuthenticated, async (parent, args, { me }) => {
+      if (me.role === "Admin") {
+        const users = await models.User.find();
+        return users || [];
+      }
+      return [];
+    }),
+    user: combineResolvers(isAuthenticated, async (parent, { id }, { me }) => {
+      if (me.role === "Admin") {
+        const user = await models.User.findById(id);
+        return user || {};
+      }
+      return {};
+    }),
     me: async (parent, args, { me }) => {
       // console.log(`🚀 a ${me}`);
       if (!me) {
@@ -91,34 +73,36 @@ module.exports = {
   },
 
   Mutation: {
-    signUp: async (
-      parent,
-      { username, email, password, phone, address },
-      {}
-    ) => {
+    signUp: async (parent, { password, phone, address }, {}) => {
+      // username, email,
+      const verificationCode = Math.floor(100000 + Math.random() * 900000);
+      // sendSMS(
+      //   process.env.TWILIO_PHONE_NUMBER,
+      //   phone,
+      //   `Thanks for signing up. Please use the Code: ${verificationCode} to verify account!`
+      // );
       const user = await models.User.create({
-        username,
-        email,
-        password,
-        isVerified: false,
-        verificationCode: Math.floor(100000 + Math.random() * 900000),
-        signUpDate: moment(),
         phone,
+        password,
+        signUpDate: moment(),
         address,
+        isVerified: false,
         role: "Client",
+        verificationCode,
       });
-      Email.sendVerifyEmail(email, user.verificationCode);
+      // Email.sendVerifyEmail(email, user.verificationCode);
       return { token: createToken(user, "10m"), isSuccess: true };
     },
 
-    signIn: async (parent, { email, password }, {}) => {
-      const user = await models.User.findByLogin(email);
+    signIn: async (parent, { phone, password }, {}) => {
+      const user = await models.User.findOne({ phone });
 
       // console.log({ username, user });
       if (!user) {
         throw new UserInputError("No user found with this login credentials.");
       }
       const isValid = await user.validatePassword(password);
+
       if (!isValid) {
         const forgotPassword = await models.User.findOne({
           forgotToken: password,
@@ -134,6 +118,7 @@ module.exports = {
         }
         throw new AuthenticationError("Invalid password.");
       }
+
       return {
         isSuccess: true,
         data: {
@@ -143,15 +128,29 @@ module.exports = {
       };
     },
 
+    testSendSMS: async (parent, { phone }, {}) => {
+      const verificationCode = Math.floor(100000 + Math.random() * 900000);
+      // await sendSMS(
+      //   phone,
+      //   `Thanks for signing up. Please use the Code: ${verificationCode} to verify account!`
+      // );
+      // `Thanks for signing up. Please use the Code: ${verificationCode} to verify account!`
+      return { isSuccess: true };
+    },
+
     updateUser: combineResolvers(
       isAuthenticated,
       async (parent, args, { me }) => {
-        const { profileInput } = args;
-        const user = await models.User.findByIdAndUpdate(
-          me.id,
-          { ...profileInput },
-          { new: true }
-        );
+        // { email, username, address, gender, dob }
+        const updateObj = {};
+        Object.keys(args).forEach((x) => {
+          if (!_.isEmpty(args[x])) {
+            _.assign(updateObj, { [x]: args[x] });
+          }
+        });
+        const user = await models.User.findByIdAndUpdate(me.id, updateObj, {
+          new: true,
+        });
         return { isSuccess: !!user };
       }
     ),

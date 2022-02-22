@@ -8,15 +8,9 @@ module.exports = gql`
   }
 
   extend type Mutation {
-    signUp(
-      username: String!
-      email: String!
-      password: String!
-      phone: String
-      address: String
-    ): SignUpData!
+    signUp(phone: String!, password: String!, address: String!): SignUpData!
 
-    signIn(email: String!, password: String!): SignInData!
+    signIn(phone: String!, password: String!): SignInData!
 
     updateUser(profileInput: ProfileInput!): MutationResponse!
     deleteUser(id: ID!): MutationResponse!
@@ -32,15 +26,15 @@ module.exports = gql`
     forgotPassword(email: String!): MutationResponse!
 
     resendVerifiedEmail: MutationResponse!
+    testSendSMS(phone: String!): MutationResponse!
   }
 
   input ProfileInput {
-    username: String!
+    email: String
+    username: String
     gender: String
     address: String
-    phone: String
     dob: Date
-    role: String
   }
 
   type SignUpData {
@@ -75,8 +69,8 @@ module.exports = gql`
 
   type User {
     id: ID!
-    username: String!
-    email: String!
+    username: String
+    email: String
     role: String
     signUpDate: Date
     # NEW FIELDS
@@ -86,12 +80,6 @@ module.exports = gql`
     phone: String
     dob: Date
     isVerified: Boolean
-
-    # PROFILE INFO
-    firstDate: String
-    totalSpending: Float
-    totalIncome: Float
-    moneyLeft: Float
   }
 
   type MutationResponse {

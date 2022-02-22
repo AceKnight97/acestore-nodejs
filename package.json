@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@sendgrid/mail": "^7.4.5",
+    "@vonage/server-sdk": "^2.10.10",
     "apollo-server": "^2.14.2",
     "apollo-server-core": "^3.6.3",
     "apollo-server-express": "^2.25.3",
@@ -28,6 +29,7 @@
     "mongoose": "^5.9.17",
     "nodemon": "^2.0.4",
     "socket.io": "^4.4.1",
+    "twilio": "^3.74.0",
     "validator": "^13.6.0"
   }
 }
