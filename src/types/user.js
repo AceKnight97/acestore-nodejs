@@ -12,7 +12,7 @@ module.exports = gql`
 
     signIn(phone: String!, password: String!): SignInData!
 
-    updateUser(profileInput: ProfileInput!): MutationResponse!
+    updateUser(profileInput: ProfileInput!): UpdateUserResponse!
     deleteUser(id: ID!): MutationResponse!
     verifiedEmail(verificationCode: String!): MutationResponse!
     changePassword(
@@ -85,6 +85,12 @@ module.exports = gql`
   type MutationResponse {
     isSuccess: Boolean!
     message: String
+  }
+
+  type UpdateUserResponse {
+    isSuccess: Boolean!
+    message: String
+    user: User
   }
 
   type TokenMutationResponse {

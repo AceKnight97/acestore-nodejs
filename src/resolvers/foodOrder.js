@@ -11,8 +11,6 @@ const { ALL_SUBSCRIPTIONS } = require("../constants");
 
 const { NEW_FOOD_ORDER } = ALL_SUBSCRIPTIONS;
 
-// const timeIso = (x) => moment(x, "DD/MM/YYYY").toISOString();
-
 const handleAnyCustomerOrder = async (customer = {}) => {
   const { email, username, password, address, phone } = customer;
   const isExisted = await models.User.findOne({ email });

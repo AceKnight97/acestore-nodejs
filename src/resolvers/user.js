@@ -140,18 +140,21 @@ module.exports = {
 
     updateUser: combineResolvers(
       isAuthenticated,
-      async (parent, args, { me }) => {
+      async (parent, { profileInput }, { me }) => {
         // { email, username, address, gender, dob }
         const updateObj = {};
-        Object.keys(args).forEach((x) => {
-          if (!_.isEmpty(args[x])) {
-            _.assign(updateObj, { [x]: args[x] });
+        Object.keys(profileInput).forEach((x) => {
+          if (
+            !_.isEmpty(profileInput[x]) ||
+            (x === "dob" && profileInput.dob)
+          ) {
+            _.assign(updateObj, { [x]: profileInput[x] });
           }
         });
         const user = await models.User.findByIdAndUpdate(me.id, updateObj, {
           new: true,
         });
-        return { isSuccess: !!user };
+        return { isSuccess: !!user, user };
       }
     ),
 
@@ -230,7 +233,11 @@ module.exports = {
             message: "Already verified!",
           };
         }
-        Email.sendVerifyEmail(user.email, user.verificationCode);
+        const res = await Email.sendVerifyEmail(
+          user.email,
+          user.verificationCode
+        );
+        // console.log({ res });
         return { isSuccess: !!user };
       }
     ),

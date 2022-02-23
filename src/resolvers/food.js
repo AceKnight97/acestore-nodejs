@@ -3,7 +3,6 @@ const { isAuthenticated } = require("./authorization");
 const models = require("../models");
 const MESSAGES = require("../constants/messages");
 const _ = require("lodash");
-// const moment = require("moment");
 
 module.exports = {
   Query: {
