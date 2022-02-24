@@ -12,27 +12,25 @@ const { ALL_SUBSCRIPTIONS } = require("../constants");
 const { NEW_FOOD_ORDER } = ALL_SUBSCRIPTIONS;
 
 const handleAnyCustomerOrder = async (customer = {}) => {
-  const { email, username, password, address, phone } = customer;
-  const isExisted = await models.User.findOne({ email });
+  const { phone, password, address } = customer;
+  const isExisted = await models.User.findOne({ phone });
   if (isExisted) {
     return isExisted;
   }
   const user = await models.User.create({
-    username,
-    email,
+    phone,
     password,
-    isVerified: false,
     verificationCode: Math.floor(100000 + Math.random() * 900000),
     signUpDate: moment(),
     address,
-    phone,
     role: "Client",
+    isVerified: false,
   });
-  Email.sendVerifyEmail(email, user.verificationCode);
+  // Email.sendVerifyEmail(email, user.verificationCode);
   return user;
 };
 
-const getOrderHistory = async (res = [], me = {}) => {
+const getOrderHistory = async (res = [], user = {}) => {
   const final = [];
   const foodData = res.map(async (x) => await models.Food.findById(x.food));
   // console.log({ foodData });
@@ -40,7 +38,7 @@ const getOrderHistory = async (res = [], me = {}) => {
     final.push({
       food: foodData[i],
       foodOrder: x,
-      user: me,
+      user,
     });
   });
   return final;
@@ -66,8 +64,9 @@ module.exports = {
         const res = await models.FoodOrder.find(filterObject).sort({
           createdAt: "asc",
         });
-        // console.log({ res });
-        const final = await getOrderHistory(res, me);
+        const user = await models.User.findById(me.id);
+        // console.log({ res, user });
+        const final = await getOrderHistory(res, user);
         // console.log({ final });
         return final;
       } catch (error) {
@@ -91,7 +90,8 @@ module.exports = {
         });
         try {
           const foodOrder = await models.FoodOrder.create(input);
-          const newFoodOrders = await getOrderHistory(foodOrder, me);
+          const user = await models.User.findById(me.id);
+          const newFoodOrders = await getOrderHistory(foodOrder, user);
           pubsub.publish(NEW_FOOD_ORDER, {
             newFoodOrders,
           });

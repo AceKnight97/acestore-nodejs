@@ -20,7 +20,6 @@ module.exports = gql`
     food: ID!
     quantity: Float
     createdAt: Date
-    email: String
     notes: String
     status: String
     price: Float
@@ -41,7 +40,6 @@ module.exports = gql`
   input OrderInput {
     food: ID!
     quantity: Float
-    email: String
     notes: String
     status: String
     price: Float
@@ -49,10 +47,8 @@ module.exports = gql`
   }
 
   input CustomerInput {
-    address: String
-    email: String
-    password: String
     phone: String
-    username: String
+    address: String
+    password: String
   }
 `;
