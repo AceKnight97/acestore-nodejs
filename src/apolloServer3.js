@@ -42,7 +42,7 @@ const corsOptions = {
   origin: "*",
 };
 
-server.applyMiddleware({ app, path: "/graphql", cors: corsOptions });
+server.applyMiddleware({ app, cors: corsOptions });
 
 const httpServer = createServer(app);
 server.installSubscriptionHandlers(httpServer);
