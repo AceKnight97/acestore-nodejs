@@ -63,7 +63,6 @@ module.exports = {
       return {};
     }),
     me: async (parent, args, { me }) => {
-      // console.log(`🚀 a ${me}`);
       if (!me) {
         return {};
       }
@@ -81,23 +80,31 @@ module.exports = {
       //   phone,
       //   `Thanks for signing up. Please use the Code: ${verificationCode} to verify account!`
       // );
-      const user = await models.User.create({
-        phone,
-        password,
-        signUpDate: moment(),
-        address,
-        isVerified: false,
-        role: "Client",
-        verificationCode,
-      });
-      // Email.sendVerifyEmail(email, user.verificationCode);
-      return { token: createToken(user, "10m"), isSuccess: true };
+      try {
+        const isExisted = models.User.findOne({ phone });
+        if (isExisted) {
+          return { token: "", isSuccess: false };
+        }
+        const user = await models.User.create({
+          phone,
+          password,
+          signUpDate: moment(),
+          address,
+          isVerified: false,
+          role: "Client",
+          verificationCode,
+        });
+        // Email.sendVerifyEmail(email, user.verificationCode);
+        return { token: createToken(user, "10m"), isSuccess: true };
+      } catch (error) {
+        console.log({ error });
+        return { token: "", isSuccess: false };
+      }
     },
 
     signIn: async (parent, { phone, password }, {}) => {
       const user = await models.User.findOne({ phone });
 
-      // console.log({ username, user });
       if (!user) {
         throw new UserInputError("No user found with this login credentials.");
       }
@@ -237,7 +244,6 @@ module.exports = {
           user.email,
           user.verificationCode
         );
-        // console.log({ res });
         return { isSuccess: !!user };
       }
     ),
