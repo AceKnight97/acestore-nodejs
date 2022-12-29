@@ -88,6 +88,7 @@ userSchema.methods.generatePasswordHash = async function () {
 };
 
 userSchema.methods.validatePassword = async function (password) {
+  console.log({password, new: this.password})
   const result = await bcrypt.compare(password, this.password);
   return result;
 };

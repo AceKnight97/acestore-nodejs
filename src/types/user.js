@@ -40,6 +40,7 @@ module.exports = gql`
   type SignUpData {
     token: String!
     isSuccess: Boolean
+    message: String
   }
 
   type SignInDataInner {
@@ -48,8 +49,9 @@ module.exports = gql`
   }
 
   type SignInData {
-    isSuccess: Boolean
+    isSuccess: Boolean 
     data: SignInDataInner
+    message: String
   }
 
   type UsersResponse {

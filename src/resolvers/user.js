@@ -72,7 +72,7 @@ module.exports = {
   },
 
   Mutation: {
-    signUp: async (parent, { password, phone, address }, {}) => {
+    signUp: async (parent, { password, phone, address }, { }) => {
       // username, email,
       const verificationCode = Math.floor(100000 + Math.random() * 900000);
       // sendSMS(
@@ -81,9 +81,14 @@ module.exports = {
       //   `Thanks for signing up. Please use the Code: ${verificationCode} to verify account!`
       // );
       try {
-        const isExisted = models.User.findOne({ phone });
+        const isExisted = await models.User.findOne({
+          $or: [
+            { phone },
+            { username: phone }
+          ]
+        });
         if (isExisted) {
-          return { token: "", isSuccess: false };
+          return { token: "", isSuccess: false, message: "User is already existed!" };
         }
         const user = await models.User.create({
           phone,
@@ -98,12 +103,17 @@ module.exports = {
         return { token: createToken(user, "10m"), isSuccess: true };
       } catch (error) {
         console.log({ error });
-        return { token: "", isSuccess: false };
+        return { token: "", isSuccess: false, message: `${error}` };
       }
     },
 
-    signIn: async (parent, { phone, password }, {}) => {
-      const user = await models.User.findOne({ phone });
+    signIn: async (parent, { phone, password }, { }) => {
+      const user = await models.User.findOne({
+        $or: [
+          { phone },
+          { username: phone }
+        ]
+      });
 
       if (!user) {
         throw new UserInputError("No user found with this login credentials.");
@@ -111,19 +121,22 @@ module.exports = {
       const isValid = await user.validatePassword(password);
 
       if (!isValid) {
-        const forgotPassword = await models.User.findOne({
-          forgotToken: password,
-          resetPasswordExpires: { $gt: Date.now() },
-        });
-        if (forgotPassword) {
-          return {
-            token: createToken(user, "1h"),
-            srp: true,
-            isSuccess: true,
-            user,
-          };
-        }
-        throw new AuthenticationError("Invalid password.");
+        // const forgotPassword = await models.User.findOne({
+        //   forgotToken: password,
+        //   resetPasswordExpires: { $gt: Date.now() },
+        // });
+        // if (forgotPassword) {
+        //   return {
+        //     token: createToken(user, "1h"),
+        //     isSuccess: true,
+        //     user,
+        //   };
+        // }
+        return {
+          isSuccess: false,
+          data: null,
+          message: "Incorrect password!",
+        };
       }
 
       return {
@@ -135,7 +148,7 @@ module.exports = {
       };
     },
 
-    testSendSMS: async (parent, { phone }, {}) => {
+    testSendSMS: async (parent, { phone }, { }) => {
       const verificationCode = Math.floor(100000 + Math.random() * 900000);
       // await sendSMS(
       //   phone,
@@ -232,7 +245,7 @@ module.exports = {
 
     resendVerifiedEmail: combineResolvers(
       isAuthenticated,
-      async (parent, {}, { me }) => {
+      async (parent, { }, { me }) => {
         const user = await models.User.findById(me.id);
         if (user.isVerified) {
           return {
@@ -248,7 +261,7 @@ module.exports = {
       }
     ),
 
-    forgotPassword: async (parent, { email }, {}) => {
+    forgotPassword: async (parent, { email }, { }) => {
       const user = await models.User.findOneAndUpdate(
         { email },
         {
@@ -263,7 +276,7 @@ module.exports = {
       };
     },
 
-    resetPassword: async (parent, { verificationCode, password }, {}) => {
+    resetPassword: async (parent, { verificationCode, password }, { }) => {
       try {
         const user = await models.User.findOne({
           forgotToken: verificationCode,
